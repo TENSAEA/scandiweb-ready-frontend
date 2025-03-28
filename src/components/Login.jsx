@@ -1,30 +1,32 @@
 import { useState } from 'react';
 import { LOGIN } from '../graphql/mutations/user.mutation';
 import { useMutation } from '@apollo/client';
-import { GET_AUTH_USER } from '../graphql/queries/user.query';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { RotatingLines } from "react-loader-spinner";
 
-const Login = () => {
+const Login = ({ refetchAuthUser }) => { // Receive refetchAuthUser as a prop
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const navigate = useNavigate();
 
-  const [login, { loading}] = useMutation(LOGIN, {
-    refetchQueries: [{ query: GET_AUTH_USER }],
+  const [login, { loading }] = useMutation(LOGIN, {
     onCompleted: (data) => {
       console.log('LOGIN mutation response:', data);
-      toast.success("Login successful!");
+      if (data.login && data.login._id) {
+        toast.success("Login successful!");
+        refetchAuthUser(); // Manually refetch GET_AUTH_USER
+      } else {
+        toast.error("Login failed. Please try again.");
+      }
     },
     onError: (error) => {
       console.error(error);
       toast.error("Failed to login. Please try again.");
       navigate('/login');
-    }
+    },
   });
-
   function Loader() {
     return (
       <RotatingLines
