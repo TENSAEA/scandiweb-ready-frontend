@@ -14,9 +14,9 @@ const Login = () => {
 
   const [login, { loading}] = useMutation(LOGIN, {
     refetchQueries: [{ query: GET_AUTH_USER }],
-    onCompleted: () => {
+    onCompleted: (data) => {
+      console.log('LOGIN mutation response:', data);
       toast.success("Login successful!");
-      navigate('/dashboard');
     },
     onError: (error) => {
       console.error(error);
