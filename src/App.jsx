@@ -27,6 +27,7 @@ const App = () => {
       }
    
   const { data ,loading } = useQuery(GET_AUTH_USER);
+  console.log(data);
   if (loading) return (
     <div className="flex justify-center items-center h-screen">
       <Loader />
