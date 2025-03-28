@@ -16,6 +16,7 @@ const Login = () => {
     refetchQueries: [{ query: GET_AUTH_USER }],
     onCompleted: () => {
       toast.success("Login successful!");
+      navigate('/dashboard');
     },
     onError: (error) => {
       console.error(error);
