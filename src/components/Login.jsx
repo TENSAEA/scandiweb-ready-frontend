@@ -1,48 +1,74 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LOGIN } from '../graphql/mutations/user.mutation';
-import { useMutation } from '@apollo/client';
+import { GET_AUTH_USER } from '../graphql/queries/user.query';
+import { useMutation, useQuery } from '@apollo/client';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { RotatingLines } from "react-loader-spinner";
 
-const Login = ({ refetchAuthUser }) => { // Receive refetchAuthUser as a prop
+const Login = ({ refetchAuthUser }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
   const navigate = useNavigate();
-
- // In your Login.jsx file, update the login mutation handler:
-
-const [login, { loading }] = useMutation(LOGIN, {
-  onCompleted: async (data) => {
-    console.log('LOGIN mutation response:', data);
-    if (data.login && data.login._id) {
-      toast.success("Login successful!");
-      
-      // Explicitly refetch the auth user data
-      const result = await refetchAuthUser();
-      console.log("Auth refetch after login:", result);
-      
-      if (result?.data?.authUser) {
-        navigate('/dashboard');
-      } else {
-        // If refetch didn't work, try once more after a short delay
-        setTimeout(async () => {
-          const retryResult = await refetchAuthUser();
-          console.log("Retry auth refetch:", retryResult);
-          navigate('/dashboard');
-        }, 500);
-      }
-    } else {
-      toast.error("Login failed. Please try again.");
+  
+  // Add this to directly check auth status in the Login component
+  const { data: authData } = useQuery(GET_AUTH_USER, {
+    fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      console.log("Login component - Current auth status:", data);
     }
-  },
-  onError: (error) => {
-    console.error(error);
-    toast.error("Failed to login. Please try again.");
-  },
-});
+  });
+  
+  // Log auth status changes
+  useEffect(() => {
+    console.log("Login component - Auth data changed:", authData);
+  }, [authData]);
 
+  const [login, { loading }] = useMutation(LOGIN, {
+    onCompleted: async (data) => {
+      console.log('LOGIN mutation response:', data);
+      
+      if (data.login && data.login._id) {
+        toast.success("Login successful!");
+        
+        console.log("Before refetch - Auth status:", authData);
+        
+        // First refetch attempt
+        try {
+          const result = await refetchAuthUser();
+          console.log("After refetch - Result:", result);
+          console.log("After refetch - Auth data in component:", authData);
+          
+          // Check the Apollo Client cache directly
+          console.log("Checking Apollo cache...");
+          
+          // Add a delay and try again
+          setTimeout(async () => {
+            try {
+              const retryResult = await refetchAuthUser();
+              console.log("Delayed refetch - Result:", retryResult);
+              
+              // Check auth data again after delay
+              console.log("Delayed refetch - Auth data in component:", authData);
+              
+              // Force navigation regardless
+              navigate('/dashboard');
+            } catch (error) {
+              console.error("Error in delayed refetch:", error);
+            }
+          }, 1000);
+        } catch (error) {
+          console.error("Error in initial refetch:", error);
+        }
+      } else {
+        toast.error("Login failed. Please try again.");
+      }
+    },
+    onError: (error) => {
+      console.error("Login mutation error:", error);
+      toast.error("Failed to login. Please try again.");
+    },
+  });
 
   function Loader() {
     return (
