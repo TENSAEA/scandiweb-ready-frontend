@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@apollo/client';
 import App from './App.jsx'
 import './index.css'
+import { AuthProvider } from './context/AuthContext';
 
 const httpLink = createHttpLink({
   uri: 'https://scandiweb-ready-backend-1.onrender.com/graphql',
@@ -25,7 +26,9 @@ const client = new ApolloClient({
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ApolloProvider client={client}>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </ApolloProvider>
   </StrictMode>,
 )

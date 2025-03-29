@@ -1,74 +1,15 @@
-import { useState, useEffect } from 'react';
-import { LOGIN } from '../graphql/mutations/user.mutation';
-import { GET_AUTH_USER } from '../graphql/queries/user.query';
-import { useMutation, useQuery } from '@apollo/client';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { RotatingLines } from "react-loader-spinner";
+import { useAuth } from '../context/AuthContext';
 
-const Login = ({ refetchAuthUser }) => {
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  
-  // Add this to directly check auth status in the Login component
-  const { data: authData } = useQuery(GET_AUTH_USER, {
-    fetchPolicy: 'network-only',
-    onCompleted: (data) => {
-      console.log("Login component - Current auth status:", data);
-    }
-  });
-  
-  // Log auth status changes
-  useEffect(() => {
-    console.log("Login component - Auth data changed:", authData);
-  }, [authData]);
-
-  const [login, { loading }] = useMutation(LOGIN, {
-    onCompleted: async (data) => {
-      console.log('LOGIN mutation response:', data);
-      
-      if (data.login && data.login._id) {
-        toast.success("Login successful!");
-        
-        console.log("Before refetch - Auth status:", authData);
-        
-        // First refetch attempt
-        try {
-          const result = await refetchAuthUser();
-          console.log("After refetch - Result:", result);
-          console.log("After refetch - Auth data in component:", authData);
-          
-          // Check the Apollo Client cache directly
-          console.log("Checking Apollo cache...");
-          
-          // Add a delay and try again
-          setTimeout(async () => {
-            try {
-              const retryResult = await refetchAuthUser();
-              console.log("Delayed refetch - Result:", retryResult);
-              
-              // Check auth data again after delay
-              console.log("Delayed refetch - Auth data in component:", authData);
-              
-              // Force navigation regardless
-              navigate('/dashboard');
-            } catch (error) {
-              console.error("Error in delayed refetch:", error);
-            }
-          }, 1000);
-        } catch (error) {
-          console.error("Error in initial refetch:", error);
-        }
-      } else {
-        toast.error("Login failed. Please try again.");
-      }
-    },
-    onError: (error) => {
-      console.error("Login mutation error:", error);
-      toast.error("Failed to login. Please try again.");
-    },
-  });
+  const { login } = useAuth();
 
   function Loader() {
     return (
@@ -79,24 +20,34 @@ const Login = ({ refetchAuthUser }) => {
         width="96"
         visible={true}
       />
-    )
+    );
   }
 
-  if (loading) return (
+  if (isLoading) return (
     <div className="flex justify-center items-center h-screen">
       <Loader />
     </div>
   );
 
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    
     try {
-      console.log('loginUser', username);
-      await login({ variables: { input: { username, password } } }); // Updated to match the expected input structure
+      console.log('Attempting login for user:', username);
+      const result = await login(username, password);
+      
+      if (result.success) {
+        toast.success("Login successful!");
+        navigate('/dashboard');
+      } else {
+        toast.error(result.error || "Login failed. Please try again.");
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Login error:", error);
+      toast.error("Failed to login. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
