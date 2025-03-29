@@ -33,7 +33,7 @@ const Dashboard = () => {
    const Navigate =  useNavigate();
    const theme = useTheme();
  const { data: authUserData }= useQuery(GET_AUTH_USER);
- const { logout, user } = useAuth();
+ const { logout, user, loading: authLoading } = useAuth(); // Get loading state from auth context
 
   const roadmapSteps = [
     {
