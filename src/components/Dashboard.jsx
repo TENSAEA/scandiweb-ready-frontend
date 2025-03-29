@@ -25,17 +25,16 @@ import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { GET_AUTH_USER } from "../graphql/queries/user.query";
-import { useAuth } from '../context/AuthContext';
-
+import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 
 const Dashboard = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [stepCompletion, setStepCompletion] = useState([false, false, false, false]); // Track completion
-    // const [logout, { loading, client }] = useMutation(LOGOUT);
    const Navigate =  useNavigate();
    const theme = useTheme();
-   const {logout} = useAuth();
  const { data: authUserData }= useQuery(GET_AUTH_USER);
+ const { logout, user } = useAuth();
+
   const roadmapSteps = [
     {
       icon: <FaReact />,
@@ -123,18 +122,21 @@ const Dashboard = () => {
     }
   }, []);
 
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-            client.resetStore();
-            toast.success("Logged out successfully!");
-        } catch (errorCaught) {
-            console.error("Logout error:", errorCaught);
-            toast.error("Failed to logout. Please try again.");
-        }
-    };
-
+// Updated logout handler using the context
+const handleLogout = async () => {
+  try {
+    const result = await logout();
+    if (result.success) {
+      toast.success("Logged out successfully!");
+      Navigate('/'); // Redirect to homepage after logout
+    } else {
+      toast.error(result.error || "Failed to logout. Please try again.");
+    }
+  } catch (error) {
+    console.error("Logout error:", error);
+    toast.error("Failed to logout. Please try again.");
+  }
+};
   const handleStepComplete = (index) => {
     const newCompletion = [...stepCompletion];
     newCompletion[index] = true;
