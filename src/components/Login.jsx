@@ -11,22 +11,29 @@ const Login = ({ refetchAuthUser }) => { // Receive refetchAuthUser as a prop
 
   const navigate = useNavigate();
 
-  const [login, { loading }] = useMutation(LOGIN, {
-    onCompleted: (data) => {
-      console.log('LOGIN mutation response:', data);
-      if (data.login && data.login._id) {
-        toast.success("Login successful!");
-        refetchAuthUser(); // Manually refetch GET_AUTH_USER
-      } else {
-        toast.error("Login failed. Please try again.");
-      }
-    },
-    onError: (error) => {
-      console.error(error);
-      toast.error("Failed to login. Please try again.");
-      navigate('/login');
-    },
-  });
+  // In your Login component
+const [login, { loading }] = useMutation(LOGIN, {
+  onCompleted: async (data) => {
+    console.log('LOGIN mutation response:', data);
+    if (data.login && data.login._id) {
+      toast.success("Login successful!");
+      const result = await refetchAuthUser(); // Wait for the refetch to complete
+      console.log("Refetch result after login:", result);
+      
+      // Force navigation after a short delay to ensure state updates
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 300);
+    } else {
+      toast.error("Login failed. Please try again.");
+    }
+  },
+  onError: (error) => {
+    console.error(error);
+    toast.error("Failed to login. Please try again.");
+  },
+});
+
   function Loader() {
     return (
       <RotatingLines
