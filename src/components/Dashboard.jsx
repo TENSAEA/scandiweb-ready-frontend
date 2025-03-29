@@ -25,13 +25,16 @@ import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { GET_AUTH_USER } from "../graphql/queries/user.query";
+import { useAuth } from '../context/AuthContext';
+
 
 const Dashboard = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [stepCompletion, setStepCompletion] = useState([false, false, false, false]); // Track completion
-    const [logout, { loading, client }] = useMutation(LOGOUT);
+    // const [logout, { loading, client }] = useMutation(LOGOUT);
    const Navigate =  useNavigate();
    const theme = useTheme();
+   const {logout} = useAuth();
  const { data: authUserData }= useQuery(GET_AUTH_USER);
   const roadmapSteps = [
     {
