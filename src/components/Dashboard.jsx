@@ -25,16 +25,15 @@ import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { GET_AUTH_USER } from "../graphql/queries/user.query";
-import { useAuth } from '../context/AuthContext'; // Import useAuth hook
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [stepCompletion, setStepCompletion] = useState([false, false, false, false]); // Track completion
    const Navigate =  useNavigate();
+   const { logout, user, loading: authLoading } = useAuth();
    const theme = useTheme();
  const { data: authUserData }= useQuery(GET_AUTH_USER);
- const { logout, user, loading: authLoading } = useAuth(); // Get loading state from auth context
-
   const roadmapSteps = [
     {
       icon: <FaReact />,
@@ -122,21 +121,22 @@ const Dashboard = () => {
     }
   }, []);
 
-// Updated logout handler using the context
-const handleLogout = async () => {
-  try {
-    const result = await logout();
-    if (result.success) {
-      toast.success("Logged out successfully!");
-      Navigate('/'); // Redirect to homepage after logout
-    } else {
-      toast.error(result.error || "Failed to logout. Please try again.");
+  const handleLogout = async () => {
+    try {
+      const result = await logout();
+      if (result.success) {
+        toast.success("Logged out successfully!");
+        Navigate('/');
+      } else {
+        toast.error(result.error || "Failed to logout. Please try again.");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to logout. Please try again.");
     }
-  } catch (error) {
-    console.error("Logout error:", error);
-    toast.error("Failed to logout. Please try again.");
-  }
-};
+  };
+  
+
   const handleStepComplete = (index) => {
     const newCompletion = [...stepCompletion];
     newCompletion[index] = true;
@@ -218,11 +218,12 @@ return (
 {/* Right Side: Logout Icon */}
 <Box sx={{ order: 3 }}>
     
-  <IconButton onClick={handleLogout} sx={{
-    background: 'rgba(14,165,233,0.1)', '&:hover': { background: 'rgba(14,165,233,0.2)' }
-  }} disabled={loading} >
-    <LogoutIcon style={{ width: 24, height: 24, color: '#0ea5e9' }} />
-  </IconButton>
+<IconButton onClick={handleLogout} sx={{
+  background: 'rgba(14,165,233,0.1)', '&:hover': { background: 'rgba(14,165,233,0.2)' }
+}} disabled={authLoading}>
+  <LogoutIcon style={{ width: 24, height: 24, color: '#0ea5e9' }} />
+</IconButton>
+
 </Box>
 
 {/* Mobile Mode */}
