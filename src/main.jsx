@@ -1,29 +1,31 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ApolloClient, InMemoryCache, ApolloProvider} from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@apollo/client';
 import App from './App.jsx'
 import './index.css'
 
-const client = new ApolloClient({
+const httpLink = createHttpLink({
   uri: 'https://scandiweb-ready-backend-1.onrender.com/graphql',
-  cache: new InMemoryCache(),
   credentials: "include",
+});
+
+const client = new ApolloClient({
+  link: httpLink,
+  cache: new InMemoryCache(),
   defaultOptions: {
-    watchQuery: {
-      fetchPolicy: 'network-only',
-      nextFetchPolicy: 'cache-first',
-    },
     query: {
+      fetchPolicy: 'network-only',
+    },
+    watchQuery: {
       fetchPolicy: 'network-only',
     },
   },
 });
 
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ApolloProvider client={client}>
-    <App />
+      <App />
     </ApolloProvider>
   </StrictMode>,
 )
