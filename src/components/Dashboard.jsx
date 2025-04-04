@@ -100,7 +100,7 @@ const Dashboard = () => {
     {
       title: 'MySQL Mastery',
       videoId: 'YOUR_MYSQL_VIDEO_ID',
-      link: 'https://www.youtube.com/watch?v=YOUR_MYSQL_VIDEO_ID', // Add individual link
+      link: 'https://www.veed.io/view/b2f0cf8a-dba5-478c-95cc-d357043a6a82?panel=share', // Add individual link
     },
   ];
 
