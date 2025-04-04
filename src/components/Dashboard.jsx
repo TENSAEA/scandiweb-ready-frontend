@@ -30,7 +30,7 @@ const Dashboard = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [stepCompletion, setStepCompletion] = useState([false, false, false, false]); // Track completion
   const Navigate = useNavigate();
-  const { logout, user, loading: authLoading } = useAuth();
+  const { logout, loading: authLoading } = useAuth();
   const theme = useTheme();
   const { data: authUserData } = useQuery(GET_AUTH_USER);
   
